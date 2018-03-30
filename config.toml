@@ -1,0 +1,6 @@
+# A sample TOML config file.
+[dbchadmin]
+h="localhost:27017"
+d="cuahang"
+u="cuahang"
+p="cuahang1234@"
