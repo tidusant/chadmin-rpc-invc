@@ -3,10 +3,10 @@ package main
 import (
 	"time"
 
-	"github.com/tcolgate/gostikkit/lzjs"
 	"github.com/tidusant/c3m-common/c3mcommon"
 	"github.com/tidusant/c3m-common/inflect"
 	"github.com/tidusant/c3m-common/log"
+	"github.com/tidusant/c3m-common/lzjs"
 	"github.com/tidusant/c3m-common/mystring"
 	rpch "github.com/tidusant/chadmin-repo/cuahang"
 	"github.com/tidusant/chadmin-repo/models"
