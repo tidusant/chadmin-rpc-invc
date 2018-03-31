@@ -72,7 +72,6 @@ func (t *Arith) Run(data string, result *string) error {
 func RemoveInvc(usex models.UserSession) string {
 
 	if rpch.RemoveInvcById(usex.Shop.ID.Hex(), usex.Params) {
-
 		return c3mcommon.ReturnJsonMessage("1", "", "success", `"`+usex.Params+`"`)
 	}
 	return c3mcommon.ReturnJsonMessage("2", "", "no invoice found", "")
