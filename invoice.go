@@ -70,7 +70,6 @@ func (t *Arith) Run(data string, result *string) error {
 	return nil
 }
 func RemoveInvc(usex models.UserSession) string {
-
 	if rpch.RemoveInvcById(usex.Shop.ID.Hex(), usex.Params) {
 		return c3mcommon.ReturnJsonMessage("1", "", "success", `"`+usex.Params+`"`)
 	}
