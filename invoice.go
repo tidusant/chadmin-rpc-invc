@@ -76,7 +76,6 @@ func RemoveInvc(usex models.UserSession) string {
 		return c3mcommon.ReturnJsonMessage("1", "", "success", `"`+usex.Params+`"`)
 	}
 	return c3mcommon.ReturnJsonMessage("2", "", "no invoice found", "")
-
 }
 func LoadInvoices(usex models.UserSession) string {
 	isImport, _ := strconv.ParseBool(usex.Params)
