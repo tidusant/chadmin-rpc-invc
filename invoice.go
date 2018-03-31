@@ -57,17 +57,26 @@ func (t *Arith) Run(data string, result *string) error {
 	usex.Shop = shop
 
 	if usex.Action == "siv" {
-		*result = SaveImport(usex, true)
+		*result = SaveImport(usex)
 
 	} else if usex.Action == "l" {
 		*result = LoadInvoices(usex)
-	} else if usex.Action == "sev" {
-		*result = SaveImport(usex, false)
+	} else if usex.Action == "riv" {
+		*result = RemoveInvc(usex)
 	} else { //default
 		*result = c3mcommon.ReturnJsonMessage("-5", "Action not found.", "", "")
 	}
 
 	return nil
+}
+func RemoveInvc(usex models.UserSession) string {
+
+	if rpch.RemoveInvcById(usex.Shop.ID.Hex(), usex.Params) {
+
+		return c3mcommon.ReturnJsonMessage("1", "", "success", `"`+usex.Params+`"`)
+	}
+	return c3mcommon.ReturnJsonMessage("2", "", "no invoice found", "")
+
 }
 func LoadInvoices(usex models.UserSession) string {
 	isImport, _ := strconv.ParseBool(usex.Params)
@@ -78,10 +87,10 @@ func LoadInvoices(usex models.UserSession) string {
 	info, _ := json.Marshal(invcs)
 	return c3mcommon.ReturnJsonMessage("1", "", "success", string(info))
 }
-func SaveImport(usex models.UserSession, isMain bool) string {
+func SaveImport(usex models.UserSession) string {
 	log.Debugf("param:%s", usex.Params)
 	args := strings.Split(usex.Params, ",")
-	if len(args) < 4 {
+	if len(args) < 5 {
 		return c3mcommon.ReturnJsonMessage("-5", "invalid params", "", "")
 	}
 	curlang := args[2]
@@ -89,8 +98,13 @@ func SaveImport(usex models.UserSession, isMain bool) string {
 	descbytes, _ := base64.StdEncoding.DecodeString(args[0])
 	desc := string(descbytes)
 	isImport, _ := strconv.ParseBool(args[3])
+	created, _ := time.Parse("2006-01-02", args[4])
+	var t time.Time
+	if created == t {
+		created = time.Now()
+	}
 	var importitems []models.InvoiceItem
-	strbytes, _ := base64.StdEncoding.DecodeString(args[4])
+	strbytes, _ := base64.StdEncoding.DecodeString(args[5])
 
 	err := json.Unmarshal(strbytes, &importitems)
 	if !c3mcommon.CheckError("create cat parse json", err) {
@@ -217,9 +231,8 @@ func SaveImport(usex models.UserSession, isMain bool) string {
 	invc.Import = isImport
 	invc.UserId = usex.UserID
 	invc.ShopId = usex.Shop.ID.Hex()
-	t := time.Now()
-	invc.Created = t.Unix()
-	invc.Modified = t.Unix()
+	invc.Created = created.Unix()
+	invc.Modified = created.Unix()
 
 	invc.Search = inflect.ParameterizeJoin(desc+" "+strconv.Itoa(t.Day())+" "+strconv.Itoa(int(t.Month()))+" "+strconv.Itoa(t.Year()), " ")
 	rpch.SaveInvoice(invc)
@@ -228,33 +241,7 @@ func SaveImport(usex models.UserSession, isMain bool) string {
 	return c3mcommon.ReturnJsonMessage("1", "", "", string(info))
 
 }
-func LoadProduct(usex models.UserSession, isMain bool) string {
 
-	prods := rpch.GetAllProds(usex.UserID, usex.Shop.ID.Hex(), true)
-	if len(prods) == 0 {
-		return c3mcommon.ReturnJsonMessage("2", "", "no prod found", "")
-	}
-
-	strrt := "["
-
-	for _, prod := range prods {
-		strlang := "{"
-		for lang, langinfo := range prod.Langs {
-			langinfo.Description = ""
-			langinfo.Content = ""
-			info, _ := json.Marshal(langinfo)
-			strlang += "\"" + lang + "\":" + string(info) + ","
-		}
-		strlang = strlang[:len(strlang)-1] + "}"
-		info, _ := json.Marshal(prod.Properties)
-		props := string(info)
-		strrt += "{\"Code\":\"" + prod.Code + "\",\"CatId\":\"" + prod.CatId + "\",\"Langs\":" + strlang + ",\"Properties\":" + props + "},"
-	}
-	strrt = strrt[:len(strrt)-1] + "]"
-	log.Debugf("loadprod %s", strrt)
-	return c3mcommon.ReturnJsonMessage("1", "", "success", strrt)
-
-}
 func main() {
 	var port int
 	var debug bool
