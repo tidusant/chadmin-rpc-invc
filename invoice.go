@@ -162,7 +162,7 @@ func SaveImport(usex models.UserSession) string {
 			i := 1
 			for {
 				if _, ok := mapslugs[newlang.Slug]; ok {
-					saveprod.Langs[curlang].Slug = newslug + strconv.Itoa(i)
+					newlang.Slug = newslug + strconv.Itoa(i)
 					i++
 				} else {
 					mapslugs[newlang.Slug] = newlang.Slug
