@@ -108,7 +108,7 @@ func SaveImport(usex models.UserSession) string {
 		return c3mcommon.ReturnJsonMessage("0", "properties parse json fail", "", "")
 	}
 	//get all product
-	prods := rpch.GetAllProds(usex.UserID, usex.Shop.ID.Hex(), true)
+	prods := rpch.GetAllProds(usex.UserID, usex.Shop.ID.Hex())
 	prodcodes := make(map[string]models.Product)
 	propcodes := make(map[string]models.ProductProperty)
 
@@ -135,23 +135,28 @@ func SaveImport(usex models.UserSession) string {
 		if importitem.ProductName == "" {
 			continue
 		}
-		importitem.ProductName = lzjs.CompressToBase64(importitem.ProductName)
+		//importitem.ProductName = lzjs.CompressToBase64(importitem.ProductName)
 		var saveprod models.Product
 		_, ok := prodcodes[importitem.ProductCode]
+
 		log.Debugf("prodname:%s - %s", prodcodes[importitem.ProductCode].Langs[curlang].Name, importitem.ProductName)
-
-		if ok && prodcodes[importitem.ProductCode].Langs[curlang].Name == importitem.ProductName {
-			saveprod = prodcodes[importitem.ProductCode]
-		} else {
-
+		createnewprod := true
+		if ok {
+			pname, _ := lzjs.DecompressFromBase64(prodcodes[importitem.ProductCode].Langs[curlang].Name)
+			if pname == importitem.ProductName {
+				saveprod = prodcodes[importitem.ProductCode]
+				createnewprod = false
+			}
+		}
+		if createnewprod {
 			//create new prod
 			var newlang models.ProductLang
-			newlang.Name = importitem.ProductName
+			newlang.Name = lzjs.CompressToBase64(importitem.ProductName)
 			saveprod.CatId = "unk"
 			saveprod.ShopId = usex.Shop.ID.Hex()
 			saveprod.UserId = usex.UserID
 			//newslug
-			tb, _ := lzjs.DecompressFromBase64(newlang.Name)
+			tb := importitem.ProductName
 			newslug := inflect.Parameterize(string(tb))
 			newlang.Slug = newslug
 			//check slug duplicate
@@ -165,6 +170,7 @@ func SaveImport(usex models.UserSession) string {
 					break
 				}
 			}
+
 			//create code
 			for {
 				saveprod.Code = mystring.RandString(3)
@@ -173,8 +179,9 @@ func SaveImport(usex models.UserSession) string {
 					break
 				}
 			}
+			//log.Debugf("Langs %v, %v", saveprod.Langs, *saveprod.Langs[curlang])
+			saveprod.Langs = make(map[string]*models.ProductLang)
 			saveprod.Langs[curlang] = &newlang
-
 		}
 		//save prop
 		_, ok = propcodes[importitem.PropertyCode]
@@ -232,7 +239,7 @@ func SaveImport(usex models.UserSession) string {
 	invc.Modified = created.Unix()
 
 	invc.Search = inflect.ParameterizeJoin(desc+" "+strconv.Itoa(t.Day())+" "+strconv.Itoa(int(t.Month()))+" "+strconv.Itoa(t.Year()), " ")
-	rpch.SaveInvoice(invc)
+	invc = rpch.SaveInvoice(invc)
 	info, _ := json.Marshal(invc)
 
 	return c3mcommon.ReturnJsonMessage("1", "", "", string(info))
