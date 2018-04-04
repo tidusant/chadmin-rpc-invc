@@ -139,7 +139,6 @@ func SaveImport(usex models.UserSession) string {
 		var saveprod models.Product
 		_, ok := prodcodes[importitem.ProductCode]
 
-		log.Debugf("prodname:%s - %s", prodcodes[importitem.ProductCode].Langs[curlang].Name, importitem.ProductName)
 		createnewprod := true
 		if ok {
 			pname, _ := lzjs.DecompressFromBase64(prodcodes[importitem.ProductCode].Langs[curlang].Name)
