@@ -136,9 +136,7 @@ func SaveImport(usex models.UserSession) string {
 		prodcodes[prod.Code] = prod
 		for _, prop := range prod.Properties {
 			propcodes[prop.Code] = prop
-			if prop.Code == "Hwf" {
-				log.Debugf("prop.Code %v", prop)
-			}
+
 		}
 	}
 	//slug
@@ -157,16 +155,16 @@ func SaveImport(usex models.UserSession) string {
 		}
 		//importitem.ProductName = lzjs.CompressToBase64(importitem.ProductName)
 		var saveprod models.Product
-		_, ok := prodcodes[importitem.ProductCode]
-
 		createnewprod := true
-		if ok {
-			pname, _ := lzjs.DecompressFromBase64(prodcodes[importitem.ProductCode].Langs[curlang].Name)
+		//check prod name
+		for _, prod := range prodcodes {
+			pname, _ := lzjs.DecompressFromBase64(prod.Langs[curlang].Name)
 			if pname == importitem.ProductName {
-				saveprod = prodcodes[importitem.ProductCode]
+				saveprod = prod
 				createnewprod = false
 			}
 		}
+
 		if createnewprod {
 			//create new prod
 			var newlang models.ProductLang
@@ -203,21 +201,22 @@ func SaveImport(usex models.UserSession) string {
 			saveprod.Langs[curlang] = &newlang
 		}
 		//save prop
-		_, ok = propcodes[importitem.PropertyCode]
-		if ok && propcodes[importitem.PropertyCode].Name == importitem.PropertyName && len(saveprod.Properties) > 0 {
-			for i, _ := range saveprod.Properties {
-				if saveprod.Properties[i].Code == importitem.PropertyCode {
-					if isImport {
-						saveprod.Properties[i].Stock += importitem.Stock
-						saveprod.Properties[i].BasePrice = importitem.BasePrice
-					} else {
-						saveprod.Properties[i].Stock -= importitem.Stock
-					}
-					saveprod.Langs[curlang].Unit = importitem.Unit
-					break
+
+		iscreatenewprop := true
+		for i, _ := range saveprod.Properties {
+			if saveprod.Properties[i].Name == importitem.PropertyName {
+				if isImport {
+					saveprod.Properties[i].Stock += importitem.Stock
+					saveprod.Properties[i].BasePrice = importitem.BasePrice
+				} else {
+					saveprod.Properties[i].Stock -= importitem.Stock
 				}
+				saveprod.Langs[curlang].Unit = importitem.Unit
+				iscreatenewprop = false
+				break
 			}
-		} else if isImport {
+		}
+		if iscreatenewprop {
 
 			//create new prop
 			var newprop models.ProductProperty
