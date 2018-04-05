@@ -89,8 +89,11 @@ func RemoveInvc(usex models.UserSession) string {
 		}
 
 	}
+	if rpch.RemoveInvcById(usex.Shop.ID.Hex(), usex.Params) {
+		return c3mcommon.ReturnJsonMessage("1", "", "success", `"`+usex.Params+`"`)
+	}
 
-	return c3mcommon.ReturnJsonMessage("1", "", "success", `"`+usex.Params+`"`)
+	return c3mcommon.ReturnJsonMessage("0", "remove invoice fail", "", `"`+usex.Params+`"`)
 }
 func LoadInvoices(usex models.UserSession) string {
 	isImport, _ := strconv.ParseBool(usex.Params)
