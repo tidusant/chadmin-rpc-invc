@@ -70,10 +70,26 @@ func (t *Arith) Run(data string, result *string) error {
 	return nil
 }
 func RemoveInvc(usex models.UserSession) string {
-	if rpch.RemoveInvcById(usex.Shop.ID.Hex(), usex.Params) {
-		return c3mcommon.ReturnJsonMessage("1", "", "success", `"`+usex.Params+`"`)
+	//get invc
+	invc := rpch.GetInvcById(usex.Shop.ID.Hex(), usex.Params)
+
+	if invc.ID.Hex() == "" {
+		return c3mcommon.ReturnJsonMessage("2", "", "no invoice found", "")
 	}
-	return c3mcommon.ReturnJsonMessage("2", "", "no invoice found", "")
+	//decrease stock
+	for _, item := range invc.Items {
+		prod := rpch.GetProdByCode(usex.Shop.ID.Hex(), item.ProductCode)
+		for propi, prop := range prod.Properties {
+			if prop.Code == item.PropertyCode {
+				prod.Properties[propi].Stock -= item.Stock
+				rpch.SaveProd(prod)
+				break
+			}
+		}
+
+	}
+
+	return c3mcommon.ReturnJsonMessage("1", "", "success", `"`+usex.Params+`"`)
 }
 func LoadInvoices(usex models.UserSession) string {
 	isImport, _ := strconv.ParseBool(usex.Params)
