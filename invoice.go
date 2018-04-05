@@ -76,6 +76,7 @@ func RemoveInvc(usex models.UserSession) string {
 	if invc.ID.Hex() == "" {
 		return c3mcommon.ReturnJsonMessage("2", "", "no invoice found", "")
 	}
+
 	//decrease stock
 	for _, item := range invc.Items {
 		prod := rpch.GetProdByCode(usex.Shop.ID.Hex(), item.ProductCode)
