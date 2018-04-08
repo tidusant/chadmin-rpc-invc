@@ -239,6 +239,9 @@ func SaveImport(usex models.UserSession) string {
 		//update db
 		log.Debugf("saveprod %v", saveprod)
 		rpch.SaveProd(saveprod)
+		if saveprod.ID.Hex() == "" {
+			saveprod = rpch.GetProdByCode(usex.Shop.ID.Hex(), saveprod.Code)
+		}
 		prodcodes[saveprod.Code] = saveprod
 		total += importitem.Stock * importitem.BasePrice
 		num += importitem.Stock
