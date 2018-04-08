@@ -172,7 +172,7 @@ func SaveImport(usex models.UserSession) string {
 			saveprod.CatId = "unk"
 			saveprod.ShopId = usex.Shop.ID.Hex()
 			saveprod.UserId = usex.UserID
-			saveprod.Main = isImport
+			saveprod.Main = false
 			//newslug
 			tb := importitem.ProductName
 			newslug := inflect.Parameterize(string(tb))
