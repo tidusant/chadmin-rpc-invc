@@ -209,8 +209,10 @@ func SaveImport(usex models.UserSession) string {
 				if isImport {
 					saveprod.Properties[i].Stock += importitem.Stock
 					saveprod.Properties[i].BasePrice = importitem.BasePrice
+
 				} else {
 					saveprod.Properties[i].Stock -= importitem.Stock
+					saveprod.Properties[i].Price = importitem.Price
 				}
 				saveprod.Langs[curlang].Unit = importitem.Unit
 				iscreatenewprop = false
@@ -223,6 +225,7 @@ func SaveImport(usex models.UserSession) string {
 			var newprop models.ProductProperty
 			newprop.Name = importitem.PropertyName
 			newprop.BasePrice = importitem.BasePrice
+			newprop.Price = importitem.Price
 			newprop.Stock = importitem.Stock
 			//create new prop code
 			for {
@@ -243,7 +246,11 @@ func SaveImport(usex models.UserSession) string {
 			saveprod = rpch.GetProdByCode(usex.Shop.ID.Hex(), saveprod.Code)
 		}
 		prodcodes[saveprod.Code] = saveprod
-		total += importitem.Stock * importitem.BasePrice
+		if isImport {
+			total += importitem.Stock * importitem.BasePrice
+		} else {
+			total += importitem.Stock * importitem.Price
+		}
 		num += importitem.Stock
 
 	}
