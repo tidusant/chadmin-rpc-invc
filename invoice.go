@@ -202,7 +202,6 @@ func SaveImport(usex models.UserSession) string {
 			saveprod.Langs[curlang] = &newlang
 		}
 		//save prop
-
 		iscreatenewprop := true
 		for i, _ := range saveprod.Properties {
 			if saveprod.Properties[i].Name == importitem.PropertyName {
