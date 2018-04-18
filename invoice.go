@@ -82,7 +82,11 @@ func RemoveInvc(usex models.UserSession) string {
 		prod := rpch.GetProdByCode(usex.Shop.ID.Hex(), item.ProductCode)
 		for propi, prop := range prod.Properties {
 			if prop.Code == item.PropertyCode {
-				prod.Properties[propi].Stock -= item.Stock
+				if invc.Import {
+					prod.Properties[propi].Stock -= item.Stock
+				} else {
+					prod.Properties[propi].Stock += item.Stock
+				}
 				rpch.SaveProd(prod)
 				break
 			}
